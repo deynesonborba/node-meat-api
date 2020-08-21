@@ -3,8 +3,15 @@ import * as mongoose from 'mongoose'
 import {NotFoundError} from 'restify-errors'
 
 export abstract class ModelRouter<D extends mongoose.Document> extends Router {
+
+  pageSize: number = 2
+
   constructor(protected model: mongoose.Model<D>){
     super()
+  }
+
+  protected prepareOne(query: mongoose.DocumentQuery<D,D>): mongoose.DocumentQuery<D,D>{
+    return query
   }
 
   validateId = (req, resp, next) => {
@@ -16,11 +23,22 @@ export abstract class ModelRouter<D extends mongoose.Document> extends Router {
   }
 
   findAll = (req, resp, next) => {
-    this.model.find().then(this.renderAll(resp, next)).catch(next)
+    //query= http://localhost:3000/users?_page=3
+    let page = parseInt(req.query._page || 1)
+    page = page > 0 ? page : 1
+
+    const skip = (page - 1) * this.pageSize
+
+    this.model.find()
+      .skip(skip)
+      .limit(this.pageSize)
+      .then(this.renderAll(resp, next)).catch(next)
   }
 
   findById = (req, resp, next)=>{
-    this.model.findById(req.params.id).then(this.render(resp, next)).catch(next)
+    this.prepareOne(this.model.findById(req.params.id))
+      .then(this.render(resp, next))
+      .catch(next)
   }
 
   save = (req, resp, next)=>{

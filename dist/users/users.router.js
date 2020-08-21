@@ -2,10 +2,10 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.usersRouter = void 0;
 const model_router_1 = require("../common/model-router");
-const user_model_1 = require("./user.model");
+const users_model_1 = require("./users.model");
 class UsersRouter extends model_router_1.ModelRouter {
     constructor() {
-        super(user_model_1.User);
+        super(users_model_1.User);
         this.on('beforeRender', document => {
             document.password = undefined;
         });
